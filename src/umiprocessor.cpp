@@ -38,22 +38,24 @@ void UmiProcessor::process(Read* r1, Read* r2) {
     }
     else if(mOptions->umi.location == UMI_LOC_PER_READ){
         string umi1 = r1->mSeq.mStr.substr(0, min(r1->length(), mOptions->umi.length));
-        string umiMerged = umi1;
+        // string umiMerged = umi1;
+        string umiMerged = "ZA:Z:" + umi1 + "\tRX:Z:" + umi1;
         r1->trimFront(umi1.length() + mOptions->umi.skip);
         if(r2){
             string umi2 = r2->mSeq.mStr.substr(0, min(r2->length(), mOptions->umi.length));
-            umiMerged = umiMerged + "_" + umi2;
+            // umiMerged = umiMerged + "_" + umi2;
+            umiMerged = "ZA:Z:" + umi1 + "\tZB:Z:" + umi2 + "\tRX:Z:" + umi1 + '+' + umi2;
             r2->trimFront(umi2.length() + mOptions->umi.skip);
         }
 
-        addUmiToName(r1, umiMerged);
+        addUmiToNameForFgbio(r1, umiMerged);
         if(r2){
-            addUmiToName(r2, umiMerged);
+            addUmiToNameForFgbio(r2, umiMerged);
         }
     }
 
     if(mOptions->umi.location != UMI_LOC_PER_INDEX && mOptions->umi.location != UMI_LOC_PER_READ) {
-        if(r1 && !umi.empty()) 
+        if(r1 && !umi.empty())
             addUmiToName(r1, umi);
         if(r2 && !umi.empty())
             addUmiToName(r2, umi);
@@ -78,7 +80,22 @@ void UmiProcessor::addUmiToName(Read* r, string umi){
     } else {
         r->mName = r->mName.substr(0, spacePos) + tag + r->mName.substr(spacePos, r->mName.length() - spacePos);
     }
+}
 
+void UmiProcessor::addUmiToNameForFgbio(Read* r, string umi){
+    string tag = umi;
+    int spacePos = -1;
+    for(int i=0; i<r->mName.length(); i++) {
+        if(r->mName[i] == ' ') {
+            spacePos = i;
+            break;
+        }
+    }
+    if(spacePos == -1) {
+        r->mName = r->mName + ' ' + tag;
+    } else {
+        r->mName = r->mName.substr(0, spacePos) + ' ' + tag;
+    }
 }
 
 

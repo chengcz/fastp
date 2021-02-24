@@ -15,6 +15,7 @@ public:
     ~UmiProcessor();
     void process(Read* r1, Read* r2 = NULL);
     void addUmiToName(Read* r, string umi);
+    void addUmiToNameForFgbio(Read* r, string umi);
     static bool test();
 
 private:
